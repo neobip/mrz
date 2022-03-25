@@ -1,0 +1,69 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/2.1.5/tesseract.min.js" integrity="sha512-QMGuBW4cKAKmxjxukfPlQqFL8Tc2yYWTBhg9o8fKx06BGZrNXMmafjtnmXthGasytcaIILHRrg5N5Hw0yOuSjw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+body {
+  margin: 0;
+}
+#cam,
+#log {
+  position: absolute;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  overflow: hidden;
+}
+</style>
+<video id="cam"></video>
+<div id="log"></div>
+<script>
+const video = document.getElementById("cam");
+
+if (navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then(function (stream) {
+      video.srcObject = stream;
+    })
+    .catch(function (e) {
+      console.log("Something went wrong!");
+    });
+}
+const { createWorker, createScheduler } = Tesseract;
+const scheduler = createScheduler();
+const messages = document.getElementById("log");
+let timerId = null;
+const addMessage = (m, bold) => {
+  let msg = `<p>${m}</p>`;
+  if (bold) {
+    msg = `<p class="bold">${m}</p>`;
+  }
+  messages.innerHTML = msg;
+};
+
+const doOCR = async () => {
+  const c = document.createElement("canvas");
+  c.width = 800;
+  c.height = 600;
+  c.getContext("2d").drawImage(video, 0, 0, 640, 360);
+  const {
+    data: { text }
+  } = await scheduler.addJob("recognize", c);
+  addMessage(text);
+};
+
+(async () => {
+  addMessage("Initializing");
+  for (let i = 0; i < 4; i++) {
+    const worker = createWorker();
+    await worker.load();
+    await worker.loadLanguage("eng");
+    await worker.initialize("eng");
+    scheduler.addWorker(worker);
+  }
+  addMessage("Initialized");
+  video.play();
+  timerId = setInterval(doOCR, 1000);
+})();
+</script>
