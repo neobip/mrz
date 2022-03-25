@@ -8,7 +8,7 @@ body {
 #cam,
 #log {
   position: absolute;
-  color: red;
+  color: white;
   top: 0;
   width: 100vw;
   height: 100vh;
@@ -21,17 +21,17 @@ body {
 <div id="log"></div>
 <script>
 const video = document.getElementById("cam");
-
-if (navigator.mediaDevices.getUserMedia) {
-  navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then(function (stream) {
-      video.srcObject = stream;
-    })
-    .catch(function (e) {
-      console.log("Something went wrong!");
-    });
-}
+navigator.mediaDevices
+  .getUserMedia({
+    video: {
+      facingMode: {
+        exact: "environment"
+      }
+    }
+  })
+  .then((e) => (video.srcObject = e))
+  .catch((e) => console.log("err"));
+  
 const { createWorker, createScheduler } = Tesseract;
 const scheduler = createScheduler();
 const messages = document.getElementById("log");
