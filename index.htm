@@ -46,13 +46,13 @@ const addMessage = (m, bold) => {
 
 const doOCR = async () => {
   const c = document.createElement("canvas");
-  c.width = 800;
-  c.height = 600;
-  c.getContext("2d").drawImage(video, 0, 0, 640, 360);
+  c.width = 1280;
+  c.height = 720;
+  c.getContext("2d").drawImage(video, 0, 0, 1280, 720);
   const {
     data: { text }
   } = await scheduler.addJob("recognize", c);
-  document.body.insertBefore(c, video);
+  document.body.appendChild(c);
   addMessage(text);
 };
 
@@ -66,6 +66,6 @@ const doOCR = async () => {
     scheduler.addWorker(worker);
   }
   addMessage("Initialized");
-  timerId = setInterval(doOCR, 1000);
+  timerId = setInterval(doOCR, 5000);
 })();
 </script>
